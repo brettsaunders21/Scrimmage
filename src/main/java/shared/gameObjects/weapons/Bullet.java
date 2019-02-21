@@ -6,7 +6,6 @@ import java.util.UUID;
 import shared.gameObjects.GameObject;
 import shared.gameObjects.Utils.ObjectID;
 import shared.gameObjects.components.BoxCollider;
-import shared.gameObjects.components.ComponentType;
 import shared.gameObjects.components.Rigidbody;
 import shared.gameObjects.players.Player;
 import shared.physics.Physics;
@@ -52,7 +51,7 @@ public abstract class Bullet extends GameObject {
     addComponent(new BoxCollider(this, false));
     rb = new Rigidbody(
         RigidbodyType.DYNAMIC,
-        1f,  // mass
+        100f,
         0,
         0.1f,
         new MaterialProperty(0.1f, 1, 1),
@@ -81,7 +80,6 @@ public abstract class Bullet extends GameObject {
       if (g.getId() == ObjectID.Player && !g.equals(holder)) {
         isHit = true;
         playersBeingHit.add((Player) g);
-        ((Rigidbody) holder.getComponent(ComponentType.RIGIDBODY)).move(new Vector2(-300,-300), 0.6f);
       }
     }
     
