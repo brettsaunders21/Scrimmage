@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -54,6 +55,7 @@ public class Client extends Application {
   private float accumulatedTime;
   private float elapsedSinceFPS = 0f;
   private int framesElapsedSinceFPS = 0;
+  private AtomicBoolean found = new AtomicBoolean(false);
 
   public static void main(String args[]) {
     launch(args);
@@ -240,48 +242,21 @@ public class Client extends Application {
         String message = (String) connectionHandler.received.take();
         String[] unpackedData = message.split(";");
         System.out.println(message);
+        found.set(false);
         levelHandler.getPlayers().forEach(player -> {
           if (player.getUUID() == UUID.fromString(unpackedData[0])) {
             player.setState(message);
+            found.set(true);
           }
         });
+        if (found.get() == false) {
+          levelHandler.addPlayer(
+              new Player(Double.parseDouble(unpackedData[2]), Double.parseDouble(unpackedData[3]),
+                  UUID.fromString(unpackedData[0])), gameRoot);
+          System.out.println("PLAYER CREATED");
+        }
       } catch (InterruptedException e) {
         e.printStackTrace();
-      }
-    }
-  }
-
-  public void createObject(String data) {
-    String[] unpackedData = data.split(";");
-    if (unpackedData[1] == "player") {
-      System.out.println("PLAYER CREATED");
-      levelHandler.addPlayer(
-          new Player(Double.parseDouble(unpackedData[2]), Double.parseDouble(unpackedData[3]),
-              UUID.fromString(unpackedData[0])), gameRoot);
-    }
-  }
-
-  public void serverReconciliation(int lastProcessedInput) {
-    int j = 0;
-    // Server Reconciliation. Re-apply all the inputs not yet processed by
-    // the server.
-    while (j < pendingInputs.size()) {
-      if (inputSequenceNumber <= lastProcessedInput) {
-        // Already processed. Its effect is already taken into account into the world update
-        // we just got so drop it
-        pendingInputs.remove(j);
-      } else {
-        Player player = levelHandler.getClientPlayer();
-        PacketInput input = pendingInputs.get(j);
-        // Not processed by the server yet. Re-apply it.
-        player.mouseY = input.getY();
-        player.mouseX = input.getX();
-        player.jumpKey = input.isJumpKey();
-        player.leftKey = input.isLeftKey();
-        player.rightKey = input.isRightKey();
-        player.click = false; //Don't want extra bullets
-        player.applyInput();
-        j++;
       }
     }
   }
