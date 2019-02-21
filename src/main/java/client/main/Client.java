@@ -4,7 +4,6 @@ import client.handlers.connectionHandler.ConnectionHandler;
 import client.handlers.inputHandler.KeyboardInput;
 import client.handlers.inputHandler.MouseInput;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,14 +16,11 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import shared.gameObjects.MapDataObject;
 import shared.gameObjects.players.Player;
 import shared.handlers.levelHandler.GameState;
 import shared.handlers.levelHandler.LevelHandler;
 import shared.handlers.levelHandler.Map;
-import shared.packets.PacketGameState;
 import shared.packets.PacketInput;
-import shared.packets.PacketPlayerJoin;
 import shared.physics.Physics;
 import shared.util.Path;
 
@@ -231,65 +227,24 @@ public class Client extends Application {
     primaryStage.show();
   }
 
+  //TEMP
   public void sendInput() {
-    PacketInput input =
-        new PacketInput(
-            levelHandler.getClientPlayer().mouseX,
-            levelHandler.getClientPlayer().mouseY,
-            levelHandler.getClientPlayer().leftKey,
-            levelHandler.getClientPlayer().rightKey,
-            levelHandler.getClientPlayer().jumpKey,
-            levelHandler.getClientPlayer().click,
-            levelHandler.getClientPlayer().getUUID(),
-            inputSequenceNumber);
-    connectionHandler.send(input.getString());
-    input.setInputSequenceNumber(inputSequenceNumber);
-    pendingInputs.add(input);
+    connectionHandler.send(levelHandler.getClientPlayer().getState());
     inputSequenceNumber++;
   }
 
+  //TEMP
   private void processServerPackets() {
     if (connectionHandler.received.size() != 0) {
       try {
         String message = (String) connectionHandler.received.take();
+        String[] unpackedData = message.split(";");
         System.out.println(message);
-        int messageID = Integer.parseInt(message.substring(0, 1));
-        switch (messageID) {
-          //PlayerJoin
-          case 4:
-            PacketPlayerJoin packetPlayerJoin = new PacketPlayerJoin(message);
-            levelHandler.addPlayer(
-                new Player(packetPlayerJoin.getX(), packetPlayerJoin.getY(),
-                    packetPlayerJoin.getUUID()), gameRoot);
-            break;
-          //Ends
-          case 6:
-            Client.connectionHandler.end();
-            Client.connectionHandler = null;
-            //Show score board
-            multiplayer = false;
-            Client.levelHandler.changeMap(
-                new Map("main_menu", Path.convert("src/main/resources/menus/main_menu.map"),
-                    GameState.IN_GAME), false);
-
-            break;
-          case 7:
-            PacketGameState gameState = new PacketGameState(message);
-            HashMap<UUID, String> data = gameState.getGameObjects();
-            levelHandler.getGameObjects()
-                .forEach(gameObject -> {
-                  if (!(gameObject instanceof MapDataObject)) {
-                    gameObject.setState(data.get(gameObject.getUUID()));
-                    data.remove(gameObject.getUUID());
-                  }
-                });
-            data.forEach((k, v) -> createObject(v));
-            //serverReconciliation(gameState.getLastProcessedInput());
-            break;
-          default:
-            System.out.println("ERROR" + messageID + " " + message);
-
-        }
+        levelHandler.getPlayers().forEach(player -> {
+          if (player.getUUID() == UUID.fromString(unpackedData[0])) {
+            player.setState(message);
+          }
+        });
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
