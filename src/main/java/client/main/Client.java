@@ -244,7 +244,10 @@ public class Client extends Application {
         System.out.println(message);
         found.set(false);
         levelHandler.getPlayers().forEach(player -> {
-          if (player.getUUID() == UUID.fromString(unpackedData[0])) {
+          String uuid1 = player.getUUID().toString();
+          String uuid2 = unpackedData[0];
+          if (uuid1.equals(uuid2)) {
+            System.out.println("IM HERE");
             player.setState(message);
             found.set(true);
           }
