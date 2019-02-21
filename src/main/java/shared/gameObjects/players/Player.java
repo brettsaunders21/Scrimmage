@@ -316,8 +316,18 @@ public class Player extends GameObject {
   public boolean getFacingLeft() {
     return this.facingLeft;
   }
-  
+
+  public void setFacingLeft(boolean b) {
+    this.facingLeft = b;
+    this.facingRight = !b;
+  }
+
   public boolean getFacingRight() {
     return this.facingRight;
+  }
+
+  public void setFacingRight(boolean b) {
+    this.facingLeft = !b;
+    this.facingRight = b;
   }
 }
