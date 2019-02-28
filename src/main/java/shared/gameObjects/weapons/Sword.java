@@ -8,7 +8,7 @@ import shared.util.Path;
 public class Sword extends Melee {
 
   // private static String imagePath = "images/weapons/sword.jpg";
-  private static String imagePath = "images/weapons/sword1.png";
+  private static String imagePath = "images/weapons/swords/regular/Sword.png";
   private int currentAngleIndex;
 
   /**
