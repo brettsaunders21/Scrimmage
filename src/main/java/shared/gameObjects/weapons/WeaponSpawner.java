@@ -72,8 +72,9 @@ public class WeaponSpawner extends GameObject {
     int index = random.nextInt(weapons.size());
     switch (weapons.get(index)) {
       case SWORD:
-        settings.getLevelHandler()
-            .addGameObject(new Sword(getX(), getY(), "SwordFromSpawner", null, UUID.randomUUID()));
+        if (!settings.getLevelHandler().isServer())
+          settings.getLevelHandler()
+              .addGameObject(new Sword(getX(), getY(), "SwordFromSpawner", null, UUID.randomUUID()));
         break;
       case HANDGUN:
         settings.getLevelHandler().addGameObject(

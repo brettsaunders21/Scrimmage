@@ -376,6 +376,7 @@ public class Player extends GameObject {
 
   @Override
   public void update() {
+    networkStateUpdate = true;
     // checks if outside the world, kills if fallen off the map
     if (getY() > 1200 && isActive()) {
       deductHp(999, this);

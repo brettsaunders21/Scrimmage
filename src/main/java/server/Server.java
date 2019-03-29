@@ -44,7 +44,6 @@ import shared.handlers.levelHandler.Map;
 import shared.packets.PacketGameState;
 import shared.packets.PacketInput;
 import shared.packets.PacketJoin;
-import shared.packets.PacketMap;
 import shared.physics.Physics;
 import shared.util.Path;
 import shared.util.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
@@ -276,26 +275,26 @@ public class Server extends Application {
           break;
         }
       }
-    if (alive.size() <= 1 && serverState == ServerState.IN_GAME) {
+    if (alive.size() <= 1 && playerCount.get() > 1) {
       alive.forEach(player -> player.increaseScore());
-      Map nextMap = levelHandler.pollPlayList();
+      //Map nextMap = levelHandler.pollPlayList();
       levelHandler.getPlayers().forEach((uuid, player) -> player.reset());
-      PacketMap map = new PacketMap(nextMap.getPath(), true);
-      sendToClients(map.getData(), false);
-      new java.util.Timer().schedule(
-          new java.util.TimerTask() {
-            @Override
-            public void run() {
-              Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                  levelHandler.changeMap(nextMap, true, true);
-                }
-              });
-            }
-          },
-          500
-      );
+      /**
+       PacketMap map = new PacketMap(nextMap.getPath(), true);
+       sendToClients(map.getData(), false);
+       new java.util.Timer().schedule(
+       new java.util.TimerTask() {
+      @Override public void run() {
+      Platform.runLater(new Runnable() {
+      @Override public void run() {
+      levelHandler.changeMap(nextMap, true, true);
+      }
+      });
+      }
+      },
+       500
+       );
+       **/
     } else if (alive.size() == 1 && serverState == ServerState.WAITING_FOR_READYUP) {
       ready.set(true);
     }
